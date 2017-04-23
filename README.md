@@ -1,3 +1,3 @@
 # University-Data-Analysis
 
-An exploratory project to analyze and visualize diverse university-ranking .
+An exploratory project to analyze and visualize data consisting of diversified university-rankings.
