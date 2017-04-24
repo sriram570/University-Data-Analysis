@@ -1,13 +1,17 @@
-from flask 				import Flask, render_template
-from scipy.cluster.vq	import kmeans2
-from sklearn			import preprocessing
+from flask 						import Flask, render_template, jsonify, current_app
+from scipy.cluster.vq			import kmeans2
+from sklearn					import preprocessing
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import mpld3
 import json
 import csv
 
 DATA_PATH = "./data/"
 app = Flask(__name__)
+app.debug=True
 
 @app.route("/")
 def index():
@@ -30,7 +34,7 @@ def load_data(file_name):
 
 	@file_name: csv input file
 	"""
-	df = pd.read_csv(file_name, sep=',', index_col="university_name").dropna()
+	df = pd.read_csv(file_name, sep=',').dropna()
 	return df
 	"""
 	with open(file_name, 'rb') as file:
@@ -68,7 +72,6 @@ def random_sampling(df, no_samples=500):
 	df = df.sample(no_samples)
 	return df
 
-
 def convert_to_numerical(df):
 	cols_to_transform = ['university_name', 'country', 'international_students']
 	# convert categorical variable into dummy/indicator variables
@@ -76,14 +79,28 @@ def convert_to_numerical(df):
 	#print list(numerical_df)
 	return numerical_df
 
+@app.route('/university_by_regions_plot')
+def university_by_regions_plot(df):
+	"""
+	plots the number of universities region-wise
+
+	@df dataFrame with categorical data
+	"""
+	id_count_by_region = df.groupby('country')['world_rank'].count()
+	id_count_by_region.sort_values(na_position='last', inplace=True, ascending=False)
+	fig = plt.figure(figsize=(14, 8))
+	id_count_by_region[:10].plot(kind='barh', title='Universities by Region')
+	#plt.show()
+	#mpld3.show()
+	#return jsonify(result=mpld3.fig_to_dict(fig))
 
 if __name__ == "__main__":
 	files = ["timesData.csv", "shanghaiData.csv", "cwurData.csv"]
 	data = load_data(DATA_PATH + files[0])
-	df = remove_columns(data, ["world_rank", "teaching", "country", "international_students", "female_male_ratio"])
-	print list(df)
+	university_by_regions_plot(data)
+	df = remove_columns(data, ["university_name", "world_rank", "teaching", "country", "international_students", "female_male_ratio"])
 	df = clean_normalize_data(df)
-	print list(df)
+
 	#print df.values
 	#print len(random_sampling(df))
 	#print list(df)
@@ -91,4 +108,4 @@ if __name__ == "__main__":
 	#df = random_sampling(data)
 	#numerical_df = convert_to_numerical(df)
 	#df = stratified_sampling(df)
-	app.run(host='0.0.0.0', port=8000, debug=True)
+	app.run(host='0.0.0.0', port=10001, debug=True)
