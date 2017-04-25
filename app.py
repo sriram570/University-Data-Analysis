@@ -44,7 +44,7 @@ def load_data(file_name):
 	return headers, data
 	"""
 
-def clean_normalize_data(df):
+def clean_normalize_data(df, normalize=True):
 	"""
 	cleans and normalizes data and returns dataFrame
 
@@ -60,10 +60,16 @@ def clean_normalize_data(df):
 					data_list[i][j] = 50
 				elif ',' in value:
 					data_list[i][j] = float(value.replace(',',''))
+				elif '-' in value:
+					data_list[i][j] =  float(value.split('-')[0])
+				elif '=' in value:
+					data_list[i][j] = float(value.split('=')[1])
 
 	df = pd.DataFrame(data_list)
-	normalaized_data = preprocessing.scale(np.array(df).astype(np.float))
-	return pd.DataFrame(normalaized_data)
+	if not normalize:
+		return df
+	normalized_data = preprocessing.scale(np.array(df).astype(np.float))
+	return pd.DataFrame(normalized_data)
 
 def random_sampling(df, no_samples=500):
 	"""
@@ -94,11 +100,25 @@ def university_by_regions_plot(df):
 	#mpld3.show()
 	#return jsonify(result=mpld3.fig_to_dict(fig))
 
+def parallel_coordinates(df):
+	"""
+	writes all numerical attributes to a csv file
+	"""
+	cols_to_remove = ['university_name', 'international_students', 'female_male_ratio', 'country']
+	outfile = DATA_PATH + "pc.csv"
+	df = remove_columns(df, cols_to_remove)
+	rem_cols = list(df)
+	#print list(df)
+	df = clean_normalize_data(df, normalize=False)
+	np.savetxt(outfile, np.asarray(df), delimiter=",", header=",".join(rem_cols), comments="")
+
 if __name__ == "__main__":
 	files = ["timesData.csv", "shanghaiData.csv", "cwurData.csv"]
 	data = load_data(DATA_PATH + files[0])
 	university_by_regions_plot(data)
-	df = remove_columns(data, ["university_name", "world_rank", "teaching", "country", "international_students", "female_male_ratio"])
+	parallel_coordinates(data)
+	#print list(data)
+	df = remove_columns(data, ["university_name", "country", "international_students", "female_male_ratio"])
 	df = clean_normalize_data(df)
 
 	#print df.values
