@@ -21,10 +21,6 @@ with open("data/world.json") as f:
 def index():
     return render_template("index.html")
 
-@app.route("/us_map")
-def us_map():
-    return render_template("us_map.html")
-
 @app.route("/world_map")
 def world_map():
     return json.dumps(json.load(open(DATA_PATH + "world_110m.json")))
