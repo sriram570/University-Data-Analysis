@@ -1,42 +1,358 @@
 <!DOCTYPE html>
-<html>
-<meta charset="utf-8">
-<style>
+<html lang="en">
 
-.background {
-  fill: none;
-  pointer-events: all;
-}
+<head>
 
-.mapfeature {
-  cursor: pointer;
-}
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
 
-.mesh {
-  fill: none;
-  stroke: #fff;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
+	<title>CSE 564 Final Project - University Analysis</title>
 
-.maptooltip {
-  border-style: solid;
-  border-width: 0.5px;
-  background-color: white;
-  padding: 1px;
-  position: absolute;
-  pointer-events: none;
-  font-size: 10px;
-}
+	<!-- Bootstrap Core CSS -->
+	<link href="./static/css/bootstrap.min.css" rel="stylesheet">
 
-</style>
+	<!-- MetisMenu CSS -->
+	<link href="./static/css/metisMenu.min.css" rel="stylesheet">
+
+	<!-- Custom CSS -->
+	<link href="./static/css/sb-admin-2.css" rel="stylesheet">
+
+	<!-- Morris Charts CSS -->
+	<!--<link href="../vendor/morrisjs/morris.css" rel="stylesheet"> -->
+
+	<!-- Custom Fonts -->
+	<link href="./static/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+	<!-- Slider -->
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css" rel="stylesheet" type="text/css">
+
+	<!-- Time Series -->
+	<link rel="stylesheet" type="text/css" href="./static/css/multiline.css">
+	<style>
+
+	body {
+		color: #337ab7;
+	}
+		.background {
+		  fill: none;
+		  pointer-events: all;
+		}
+
+		.mapfeature {
+		  cursor: pointer;
+		}
+
+		.mesh {
+		  fill: none;
+		  stroke: #fff;
+		  stroke-linecap: round;
+		  stroke-linejoin: round;
+		}
+
+		.maptooltip {
+		  border-style: solid;
+		  border-width: 0.5px;
+		  background-color: white;
+		  padding: 1px;
+		  position: absolute;
+		  pointer-events: none;
+		  font-size: 10px;
+		}
+
+	</style>
+</head>
+
 <body>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-<script src="https://d3js.org/topojson.v1.min.js"></script>
-<script src="https://d3js.org/queue.v1.min.js"></script>
-<script src="https://unpkg.com/topojson-client@3"></script>
-<div id="map_chart_div" width="480" height="270"></div>
-<script src="./static/js/main.js"></script>
+
+	<div id="wrapper">
+
+		<!-- Navigation -->
+		<nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="index.html"></a>
+			</div>
+			<!-- /.navbar-header -->
+
+			<ul class="nav navbar-top-links navbar-left">
+				<li>
+					<a href="index.html"><i class="fa fa-dashboard fa-fw"></i> <strong>University Analysis Dashboard</strong></a>
+				</li>
+				<!--<li>
+					<a href="charts.html"><i class="fa fa-bar-chart-o fa-fw"></i> University</a>
+				</li>-->
+			</ul>
+			<!-- /.navbar-top-links -->
+		</nav>
+
+		<div style="padding: 0 15px;">
+			<div class="row">
+				<div class="col-lg-12">
+					<h3 class="page-header"><strong>Rank Filter</strong></h3>
+						<p>
+						<b>1 &nbsp;</b> <input id="ex2" type="text" class="span2" value="" data-slider-min="1" data-slider-max="200" data-slider-step="2" data-slider-value="[1,200]"/> <b>&nbsp; 200</b>
+						</p>
+				</div>
+				<!-- /.col-lg-12 -->
+			</div> <br>
+
+			<!-- Row 1 -->
+			<div class="row">
+				<div class="col-lg-7">
+					<!-- University Map Panel -->
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bar-chart-o fa-fw"></i> University Heat Map
+							<div class="pull-right">
+								<div class="btn-group">
+									<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+										Actions
+										<span class="caret"></span>
+									</button>
+									<ul class="dropdown-menu pull-right" role="menu">
+										<li><a href="#">Action</a>
+										</li>
+										<li><a href="#">Another action</a>
+										</li>
+										<li><a href="#">Something else here</a>
+										</li>
+										<li class="divider"></li>
+										<li><a href="#">Separated link</a>
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body" style='text-align: center;'>
+							<div id="map_chart_div" width="480" height="290"></div>
+						</div>
+						<!-- /.panel-body -->
+					</div>
+					<!-- /.panel -->
+				</div>
+
+				<div class="col-lg-5">
+					<!-- /.panel -->
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bar-chart-o fa-fw"></i> Tree Map
+						</div>
+						<div class="panel-body" style='text-align: center;'>
+							<div id="pie"></div>
+							<!--<a href="#" class="btn btn-default btn-block">View Details</a>-->
+						</div>
+						<!-- /.panel-body -->
+					</div>
+				</div>
+
+			</div>
+
+			<!-- Row 2 -->
+			<div class="row">
+				<div class="col-lg-9">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bar-chart-o fa-fw"></i> Parallel Coordinates
+							<div class="pull-right">
+								<div class="btn-group">
+									<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+										Actions
+										<span class="caret"></span>
+									</button>
+									<ul class="dropdown-menu pull-right" role="menu">
+										<li><a href="#">Action</a>
+										</li>
+										<li><a href="#">Another action</a>
+										</li>
+										<li><a href="#">Something else here</a>
+										</li>
+										<li class="divider"></li>
+										<li><a href="#">Separated link</a>
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body">
+							<div id="morris-bar-chart"></div>
+						</div>
+						<!-- /.panel-body -->
+					</div>
+				</div>
+				<!-- /.col-lg-8 -->
+
+				<div class="col-lg-3">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bar-chart-o fa-fw"></i> 2D Scatterpot
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body">
+							<!--<div class="flot-chart">
+								
+							</div>-->
+						</div>
+						<!-- /.panel-body -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Row 3 -->
+			<div class="row-eq-height">
+				<div class="col-lg-5">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							Time Series
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body">
+							<!--<div class="flot-chart">-->
+								<div class="chart-wrapper" id="chart-line1"></div>
+							<!--</div>-->
+						</div>
+						<!-- /.panel-body -->
+					</div>
+					<!-- /.panel -->
+				</div>
+				<!-- /.col-lg-6 -->
+
+				<div class="col-lg-3">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							Pie Chart
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body">
+								<div id=""></div>
+						</div>
+						<!-- /.panel-body -->
+					</div>
+					<!-- /.panel -->
+				</div>
+				<!-- /.col-lg-6 -->
+
+				<div class="col-lg-4">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							Bar Chart
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body">
+								<div class="" id=""></div>
+						</div>
+						<!-- /.panel-body -->
+					</div>
+					<!-- /.panel -->
+				</div>
+				<!-- /.col-lg-6 -->
+			</div>
+			<!-- /.row -->
+
+		</div>
+	</div>
+	<!-- /#wrapper -->
+
+	<!-- jQuery -->
+	<script src="./static/js/jquery.min.js"></script>
+
+	<!-- Bootstrap Core JavaScript -->
+	<script src="./static/js/bootstrap.min.js"></script>
+
+	<script src="./static/js/metisMenu.min.js"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js"></script>
+	<script src="./static/js/sb-admin-2.js"></script>
+
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<!--<script src="https://d3js.org/d3.v3.min.js"></script>-->
+	<script src="./static/js/multiline.js" charset="utf-8"></script>
+
+	<script src="./static/js/d3pie.js"></script>
+
+	<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+	<script src="https://d3js.org/topojson.v1.min.js"></script>
+	<script src="https://d3js.org/queue.v1.min.js"></script>
+	<script src="https://unpkg.com/topojson-client@3"></script>
+	<script src="./static/js/main.js"></script>
+
+	<script>
+		/* Slider */
+		var trigger_ftn = function() {
+			var range = document.getElementById('ex2').getAttribute('value');
+			console.log(range);
+		};
+		$("#ex2").slider({})
+			.on('change', trigger_ftn)
+			.data('slider');
+
+
+		/* Time Series */
+		/*
+		var time_series = function() {
+			d3.csv('./static/data/time_series.csv', function(error, data) {
+				data.forEach(function (d) {
+					d.Year = +d.Year;
+					d.Times = +d.Times;
+					d.Shanghai = +d.Shanghai;
+					d.CWUR = +d.CWUR;
+				});
+
+				var chart = makeLineChart(data, 'Year', {
+					'Times': {column: 'Times'},
+					'Shanghai': {column: 'Shanghai'},
+					'CWUR': {column: 'CWUR'}
+				}, {xAxis: 'Year', yAxis: 'Rank'});
+				chart.bind("#chart-line1");
+				chart.render();
+
+			});
+		}
+		time_series()
+		*/
+
+		/* Pie Chart */
+		var pie_chart = function() {
+			var data = [
+			  { label: "1", value: 1 },
+			  { label: "2", value: 4 },
+			  { label: "3", value: 3 }
+			];
+
+			var pie = new d3pie("pie", {
+				size: {
+					canvasHeight: 290,
+					canvasWidth: 290
+				},
+				data: {
+					content: data
+				},
+				/*tooltips: {
+					enabled: true,
+					type: "placeholder",
+					string: "{label}, {value}, {percentage}%"
+				}*/
+			});
+
+			/*$(function() {
+			  var num = 4;
+			  $("#addData").on("click", function() {
+				data.push({
+				  label: num.toString(),
+				  value: Math.floor(Math.random() * 10) + 1
+				});
+
+				pie.updateProp("data.content", data);
+				num++;
+			  });
+			});*/
+		}
+		pie_chart()
+
+	</script>
 </body>
+
 </html>

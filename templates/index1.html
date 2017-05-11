@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<style>
+
+.background {
+  fill: none;
+  pointer-events: all;
+}
+
+.mapfeature {
+  cursor: pointer;
+}
+
+.mesh {
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.maptooltip {
+  border-style: solid;
+  border-width: 0.5px;
+  background-color: white;
+  padding: 1px;
+  position: absolute;
+  pointer-events: none;
+  font-size: 10px;
+}
+
+</style>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script src="https://d3js.org/queue.v1.min.js"></script>
+<script src="https://unpkg.com/topojson-client@3"></script>
+<div id="map_chart_div" width="480" height="270"></div>
+<script src="./static/js/main.js"></script>
+</body>
+</html>
