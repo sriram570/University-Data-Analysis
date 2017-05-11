@@ -14,9 +14,6 @@ DATA_PATH = "./data/"
 app = Flask(__name__)
 app.debug=True
 
-with open("data/world.json") as f:
-    WORLD_MAP_DATA = f.read()
-
 @app.route("/")
 def index():
     return render_template("index.html")
