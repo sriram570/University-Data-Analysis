@@ -59,6 +59,12 @@ var map_color = d3.scaleThreshold()
           .domain(d3.range(0, 10))
           .range(d3.schemeReds[9]);
 
+var map_tooltip = d3.select("body").append("div")
+                    .attr("class", "maptooltip")
+                    .attr("width", map_width/10)
+                    .attr("height", map_height/10)
+                    .style("opacity", 0);
+
 /* Ready country names and draw map*/
 function draw_map() {
     country_id_to_name_map = {};
@@ -104,7 +110,9 @@ function draw_map() {
                   .attr("country_name", function(d) {return country_id_to_name_map[d.id];})
                   .attr("d", map_path)
                   .attr("class", "mapfeature")
-                  .on("click", map_clicked);
+                  .on("click", map_clicked)
+                  .on("mouseover", map_mouseover)
+                  .on("mouseout", map_mouseout);
 
               map_g.append("path")
                   .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
@@ -114,9 +122,7 @@ function draw_map() {
               /* Drawing done, color the map now */
               color_map();
             });
-          });
-
-          
+        });  
 }
 
 function map_clicked(d) {
@@ -150,6 +156,19 @@ function map_reset() {
       .attr("transform", "");
 }
 
+function map_mouseover() {
+  this_el = d3.select(this);
+  var country_name = this_el.attr("country_name");
+  map_tooltip.transition().duration(100).style("opacity", 1);
+  map_tooltip.html(country_name + ": " + (country_data[country_name] || 0))
+         .style("left", (d3.event.pageX + 5) + "px")
+         .style("top", (d3.event.pageY - 15) + "px");
+}
+
+function map_mouseout() {
+  map_tooltip.transition().duration(100).style("opacity", 0);
+}
+
 function color_map() {
     country_data = {};
     current_times_data.map(function (d) {
@@ -179,4 +198,3 @@ function color_map() {
             this_el.attr("fill", country_color);
          });
 }
-
