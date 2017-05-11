@@ -23,7 +23,7 @@ svg {
   shape-rendering: crispEdges;
 }
 
-.axis line,
+.axis pc_line,
 .axis path {
   fill: none;
   stroke: #000;
@@ -37,27 +37,31 @@ svg {
 
 </style>
 <body>
+<div id="pc_div" width="480" height="290"></div>
 <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 
-var margin = {top: 30, right: 10, bottom: 10, left: 10},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+var pc_div = d3.select("#pc_div");
+
+var pc_margin = {top: 30, right: 10, bottom: 10, left: 10},
+    width = 960 - pc_margin.left - pc_margin.right,
+    height = 500 - pc_margin.top - pc_margin.bottom;
 
 var x = d3.scale.ordinal().rangePoints([0, width], 1),
     y = {},
     dragging = {};
 
-var line = d3.svg.line(),
+var pc_line = d3.svg.line(),
     axis = d3.svg.axis().orient("left"),
     background,
     foreground;
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var pc_svg = pc_div.append("svg")
+    .attr("id", "pc_svg")
+    .attr("width", width + pc_margin.left + pc_margin.right)
+    .attr("height", height + pc_margin.top + pc_margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + pc_margin.left + "," + pc_margin.top + ")");
 
 d3.csv("data/pc.csv", function(error, cars) {
 
@@ -69,7 +73,7 @@ d3.csv("data/pc.csv", function(error, cars) {
   }));
 
   // Add grey background lines for context.
-  background = svg.append("g")
+  background = pc_svg.append("g")
       .attr("class", "background")
     .selectAll("path")
       .data(cars)
@@ -77,7 +81,7 @@ d3.csv("data/pc.csv", function(error, cars) {
       .attr("d", path);
 
   // Add blue foreground lines for focus.
-  foreground = svg.append("g")
+  foreground = pc_svg.append("g")
       .attr("class", "foreground")
     .selectAll("path")
       .data(cars)
@@ -85,7 +89,7 @@ d3.csv("data/pc.csv", function(error, cars) {
       .attr("d", path);
 
   // Add a group element for each dimension.
-  var g = svg.selectAll(".dimension")
+  var g = pc_svg.selectAll(".dimension")
       .data(dimensions)
     .enter().append("g")
       .attr("class", "dimension")
@@ -146,7 +150,7 @@ function transition(g) {
 
 // Returns the path for a given data point.
 function path(d) {
-  return line(dimensions.map(function(p) { return [position(p), y[p](d[p])]; }));
+  return pc_line(dimensions.map(function(p) { return [position(p), y[p](d[p])]; }));
 }
 
 function brushstart() {
