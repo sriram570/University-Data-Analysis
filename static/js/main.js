@@ -254,7 +254,7 @@ var pc_margin = {top: 30, right: 10, bottom: 10, left: 10},
     width = 960 - pc_margin.left - pc_margin.right,
     height = 500 - pc_margin.top - pc_margin.bottom;
 
-var x = d3.scale.ordinal().rangePoints([0, width], 1),
+var x = d3.scaleLinear().rangePoints([0, width], 1),
     y = {},
     dragging = {};
 
