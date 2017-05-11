@@ -11,6 +11,12 @@ d3.queue()
       .await(function (error, data_json) {
         master_times_data = data_json.filter(function (d) {
                 return d.year === VIS_YEAR;
+            }).map(function (d) {
+                if (d.world_rank[0] === "=") {
+                    d.world_rank = d.world_rank.substr(1);
+                }
+                d.world_rank = parseInt(d.world_rank);
+                return d;
             });
         current_times_data = JSON.parse(JSON.stringify(master_times_data));
         render_dashboard();
@@ -28,6 +34,19 @@ d3.selection.prototype.moveToFront = function() {
         this.parentNode.appendChild(this);
     });
 };
+
+/* =========== Slider ============ */
+function range_slider_fn() {
+    var rank_range = document.getElementById('ex2').getAttribute('value');
+    rank_range = rank_range.split(",").map(function(d) {return parseInt(d);});
+    current_times_data = master_times_data.filter(function (d) {
+        return (d.world_rank >= rank_range[0] && d.world_rank <= rank_range[1]);
+        });
+    color_map();
+}
+$("#ex2").slider({})
+    .on('change', range_slider_fn)
+    .data('slider');
 
 /* ========= MAP elements ========= */
 
@@ -117,6 +136,7 @@ function draw_map() {
                   .attr("country_name", function(d) {return country_id_to_name_map[d.id];})
                   .attr("d", map_path)
                   .attr("class", "mapfeature")
+                  .style("fill", "#ccc")
                   .on("click", map_clicked)
                   .on("mouseover", map_mouseover)
                   .on("mouseout", map_mouseout);
@@ -196,26 +216,31 @@ function color_map() {
         country_data[d.country] = (country_data[d.country] || 0) + 1;
     });
     map_g.selectAll(".mapfeature")
-         .each(function(d) {
-            this_el = d3.select(this);
-            var country_name = this_el.attr("country_name");
-            var country_color = "#ccc";
-            if (!(country_name in country_data)) {
-                country_color = "#ccc";
+         .transition()
+         .duration(500)
+         .style("fill", function(d, i) {
+            return get_color(d3.select(this));
+        });
+    function get_color(d) {
+        var country_name = d.attr("country_name");
+        var country_color = "#ccc";
+        if (!(country_name in country_data)) {
+            country_color = "#ccc";
+        } else {
+            var cnt = country_data[country_name];
+            if (cnt >= 100) {
+                country_color = map_color(9);
+            } else if (cnt < 100 && cnt >= 50) {
+                country_color = map_color(6);
+            } else if (cnt < 50 && cnt >= 25) {
+                country_color = map_color(5);
+            } else if (cnt < 25 && cnt >= 10) {
+                country_color = map_color(3);
             } else {
-                var cnt = country_data[country_name];
-                if (cnt >= 100) {
-                    country_color = map_color(9);
-                } else if (cnt < 100 && cnt >= 50) {
-                    country_color = map_color(6);
-                } else if (cnt < 50 && cnt >= 25) {
-                    country_color = map_color(5);
-                } else if (cnt < 25 && cnt >= 10) {
-                    country_color = map_color(3);
-                } else {
-                    country_color = map_color(0);
-                }
+                country_color = map_color(0);
             }
-            this_el.attr("fill", country_color);
-         });
+        }
+        return country_color;
+    }
+    
 }

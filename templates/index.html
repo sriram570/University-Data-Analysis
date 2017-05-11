@@ -94,7 +94,7 @@
 				<div class="col-lg-12">
 					<h3 class="page-header"><strong>Rank Filter</strong></h3>
 						<p>
-						<b>1 &nbsp;</b> <input id="ex2" type="text" class="span2" value="" data-slider-min="1" data-slider-max="200" data-slider-step="2" data-slider-value="[1,200]"/> <b>&nbsp; 200</b>
+						<b>1 &nbsp;</b> <input id="ex2" type="text" class="span2" value="" data-slider-min="1" data-slider-max="800" data-slider-step="2" data-slider-value="[1,800]"/> <b>&nbsp; 800</b>
 						</p>
 				</div>
 				<!-- /.col-lg-12 -->
@@ -282,15 +282,6 @@
 	<script src="./static/js/main.js"></script>
 
 	<script>
-		/* Slider */
-		var trigger_ftn = function() {
-			var range = document.getElementById('ex2').getAttribute('value');
-			console.log(range);
-		};
-		$("#ex2").slider({})
-			.on('change', trigger_ftn)
-			.data('slider');
-
 
 		/* Time Series */
 		/*
