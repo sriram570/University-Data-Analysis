@@ -22,6 +22,13 @@ function render_dashboard() {
     draw_map();
 }
 
+/* Helper functions */
+d3.selection.prototype.moveToFront = function() {  
+    return this.each(function(){
+        this.parentNode.appendChild(this);
+    });
+};
+
 /* ========= MAP elements ========= */
 
 var map_chart_div = d3.select("#map_chart_div");
@@ -126,11 +133,15 @@ function draw_map() {
 }
 
 function map_clicked(d) {
+  var country_name = d3.select(this).attr("country_name");
+  if (!(country_name in country_data)) {
+    return;
+  }
   if (map_active.node() === this) return map_reset();
   map_active.classed("active", false);
   map_active = d3.select(this).classed("active", true);
 
-  console.log(d3.select(this).attr("country_name"));
+  console.log(country_name);
 
   var bounds = map_path.bounds(d),
       dx = bounds[1][0] - bounds[0][0],
@@ -144,6 +155,11 @@ function map_clicked(d) {
       .duration(750)
       .style("stroke-width", .5 / scale + "px")
       .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+  d3.select(this).moveToFront();
+  d3.select(this).transition()
+                 .duration(750)
+                 .style("stroke", "yellow")
+                 .style("stroke-width", (2.5 / scale) + "px");
 }
 
 function map_reset() {
@@ -154,6 +170,11 @@ function map_reset() {
       .duration(750)
       .style("stroke-width", ".5px")
       .attr("transform", "");
+  
+  d3.selectAll(".mapfeature").transition()
+                 .duration(750)
+                 .style("stroke", "white")
+                 .style("stroke-width", ".5px");
 }
 
 function map_mouseover() {
