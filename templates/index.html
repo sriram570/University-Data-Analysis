@@ -277,6 +277,7 @@
 		/* Time Series */
 		var chart;
 		var time_series = function(university_name) {
+			$('#chart-line1').empty();
 			d3.csv('./static/data/' + university_name + '_time_series.csv', function(error, data) {
 				data.forEach(function (d) {
 					d.Year = +d.Year;

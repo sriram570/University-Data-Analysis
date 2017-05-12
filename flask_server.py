@@ -73,8 +73,12 @@ def time_series():
 	cwur_plot_data['source'] = 'CWUR'
 
 	# parse the first number in rank for data ranges
-	times_plot_data['world_rank'] = times_plot_data['world_rank'].str.split('-').str[0]
-	shanghai_plot_data['world_rank'] = shanghai_plot_data['world_rank'].str.split('-').str[0]
+	if '-' in [times_plot_data['world_rank'].str, shanghai_plot_data['world_rank'].str]:
+		times_plot_data['world_rank'] = times_plot_data['world_rank'].str.split('-').str[0]
+		shanghai_plot_data['world_rank'] = shanghai_plot_data['world_rank'].str.split('-').str[0]
+	elif '=' in [times_plot_data['world_rank'].str, shanghai_plot_data['world_rank'].str]:
+		shanghai_plot_data['world_rank'] = shanghai_plot_data['world_rank'].str.split('=').str[1]
+		times_plot_data['world_rank'] = times_plot_data['world_rank'].str.split('=').str[1]
 
 	plot_data = times_plot_data.append(shanghai_plot_data).append(cwur_plot_data)
 	plot_data['world_rank'] = plot_data['world_rank'].astype(int)
