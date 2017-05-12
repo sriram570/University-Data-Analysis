@@ -27,6 +27,7 @@ d3_queue.queue()
 function render_dashboard() {
     draw_map();
     draw_pie_chart();
+    draw_pc();
 }
 
 /* Helper functions */
@@ -49,6 +50,8 @@ function get_rank_range_data() {
 function range_slider_fn() {
     current_times_data = get_rank_range_data();
     color_map();
+    update_pie_chart();
+    update_pc();
 }
 $("#ex2").slider({})
     .on('change', range_slider_fn)
@@ -94,6 +97,8 @@ var map_tooltip = d3.select("body").append("div")
                     .attr("width", map_width/10)
                     .attr("height", map_height/10)
                     .style("opacity", 0);
+
+var map_selected = "World";
 
 /* Ready country names and draw map*/
 function draw_map() {
@@ -165,7 +170,10 @@ function map_clicked(d) {
   map_active.classed("active", false);
   map_active = d3.select(this).classed("active", true);
 
-  console.log(country_name);
+  current_times_data = get_rank_range_data();
+  current_times_data = current_times_data.filter(function(d) {
+    return (d.country === country_name);
+  });
 
   var bounds = map_path.bounds(d),
       dx = bounds[1][0] - bounds[0][0],
@@ -184,12 +192,17 @@ function map_clicked(d) {
                  .duration(750)
                  .style("stroke", "yellow")
                  .style("stroke-width", (2.5 / scale) + "px");
+
+  map_selected = country_name;
+  update_pie_chart();
+  update_pc();
 }
 
 function map_reset() {
   map_active.classed("active", false);
   map_active = d3.select(null);
 
+  current_times_data = get_rank_range_data();
   console.log(current_times_data.length);
 
   map_g.transition()
@@ -201,6 +214,10 @@ function map_reset() {
                  .duration(750)
                  .style("stroke", "white")
                  .style("stroke-width", ".5px");
+
+  map_selected = "World";
+  update_pie_chart();
+  update_pc();
 }
 
 function map_mouseover() {
@@ -257,13 +274,13 @@ function color_map() {
 var pie_chart = null;
 
 function draw_pie_chart() {
-  var research_work = get_research_count();
   pie_chart = new d3pie("pie_chart_div", {
                   header: {
                     title: {
-                      text: "World"
+                      text: map_selected,
+                      fontSize: "25"
                     },
-                    location: "pie-center"
+                    location: "top-center",
                   },
                   size: {
                     canvasHeight: 290,
@@ -271,20 +288,25 @@ function draw_pie_chart() {
                     pieInnerRadius: "60%"
                   },
                   data: {
-                    content: [
-                      { label: "Very High", value: research_work[0] },
-                      { label: "High", value: research_work[1] },
-                      { label: "Medium", value: research_work[2] },
-                      { label: "Low", value: research_work[3] },
-                      { label: "Very Low", value: research_work[4] }
-                    ]
+                    content: generate_pie_data()
                   }
                 });
 }
 
 function update_pie_chart() {
-  var research_work = get_research_count();
+  pie_chart.destroy();
+  draw_pie_chart();
+}
 
+function generate_pie_data() {
+  var research_work = get_research_count();
+  return [
+          { label: "Very High", value: research_work[0] },
+          { label: "High", value: research_work[1] },
+          { label: "Medium", value: research_work[2] },
+          { label: "Low", value: research_work[3] },
+          { label: "Very Low", value: research_work[4] }
+          ]
 }
 
 function get_research_count() {
@@ -297,12 +319,27 @@ function get_research_count() {
 }
 
 /* ========= PC elements ========= */
+function data_helper() {
+  var new_data = current_times_data.map(function (d) {
+    cols = ["world_rank", "teaching", "research", "citations", "international", "total_score"];
+    arr = []
+    new_d = {}
+    for (var i = 0; i < cols.length; i++) {
+        if (d[cols[i]] == '-')
+          new_d[cols[i]] = Math.random() * (60 - 30) + 40;
+        else
+          new_d[cols[i]] = parseFloat(d[cols[i]]);
+    }
+    return new_d;
+  });
+  return new_data;
+}
 
 var pc_div = d3.select("#pc_div");
 
 var pc_margin = {top: 30, right: 10, bottom: 10, left: 10},
     width = 1200 - pc_margin.left - pc_margin.right,
-    height = 450 - pc_margin.top - pc_margin.bottom;
+    height = 420 - pc_margin.top - pc_margin.bottom;
 
 var x = d3.scale.ordinal().rangePoints([0, width], 1),
     y = {},
@@ -313,115 +350,126 @@ var pc_line = d3.svg.line(),
     background,
     foreground;
 
-var pc_svg = pc_div.append("svg")
+var pc_parent_svg = pc_div.append("svg")
     .attr("id", "pc_svg")
     .attr("width", width + pc_margin.left + pc_margin.right)
-    .attr("height", height + pc_margin.top + pc_margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + pc_margin.left + "," + pc_margin.top + ")");
+    .attr("height", height + pc_margin.top + pc_margin.bottom);
 
-d3.csv("static/data/pc.csv", function(error, data) {
-  console.log();
-  console.log(data);
-  // Extract the list of dimensions and create a scale for each.
-  x.domain(dimensions = d3.keys(data[0]).filter(function(d) {
-    return y[d] = d3.scale.linear()
-        .domain(d3.extent(data, function(p) { return +p[d]; }))
-        .range([height, 0]);
-  }));
+var pc_svg = pc_parent_svg.append("g")
+                          .attr("transform", "translate(" + pc_margin.left + "," + pc_margin.top + ")");
 
-  // Add grey background lines for context.
-  background = pc_svg.append("g")
-      .attr("class", "background")
-    .selectAll("path")
-      .data(data)
-    .enter().append("path")
-      .attr("d", path);
+function draw_pc() {
 
-  // Add blue foreground lines for focus.
-  foreground = pc_svg.append("g")
-      .attr("class", "foreground")
-    .selectAll("path")
-      .data(data)
-    .enter().append("path")
-      .attr("d", path);
+    pc_times_data = data_helper();
 
-  // Add a group element for each dimension.
-  var g = pc_svg.selectAll(".dimension")
-      .data(dimensions)
-    .enter().append("g")
-      .attr("class", "dimension")
-      .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
-      .call(d3.behavior.drag()
-        .origin(function(d) { return {x: x(d)}; })
-        .on("dragstart", function(d) {
-          dragging[d] = x(d);
-          background.attr("visibility", "hidden");
+    // Extract the list of dimensions and create a scale for each.
+    x.domain(dimensions = d3.keys(pc_times_data[0]).filter(function(d) {
+      return y[d] = d3.scale.linear()
+          .domain(d3.extent(pc_times_data, function(p) { return +p[d]; }))
+          .range([height, 0]);
+    }));
+
+    // Add grey background lines for context.
+    background = pc_svg.append("g")
+        .attr("class", "background")
+      .selectAll("path")
+        .data(pc_times_data)
+      .enter().append("path")
+        .attr("d", path);
+
+    // Add blue foreground lines for focus.
+    foreground = pc_svg.append("g")
+        .attr("class", "foreground")
+      .selectAll("path")
+        .data(pc_times_data)
+      .enter().append("path")
+        .attr("d", path);
+
+    // Add a group element for each dimension.
+    var g = pc_svg.selectAll(".dimension")
+        .data(dimensions)
+      .enter().append("g")
+        .attr("class", "dimension")
+        .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+        .call(d3.behavior.drag()
+          .origin(function(d) { return {x: x(d)}; })
+          .on("dragstart", function(d) {
+            dragging[d] = x(d);
+            background.attr("visibility", "hidden");
+          })
+          .on("drag", function(d) {
+            dragging[d] = Math.min(width, Math.max(0, d3.event.x));
+            foreground.attr("d", path);
+            dimensions.sort(function(a, b) { return position(a) - position(b); });
+            x.domain(dimensions);
+            g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
+          })
+          .on("dragend", function(d) {
+            delete dragging[d];
+            transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
+            transition(foreground).attr("d", path);
+            background
+                .attr("d", path)
+              .transition()
+                .delay(500)
+                .duration(0)
+                .attr("visibility", null);
+          }));
+
+    // Add an axis and title.
+    g.append("g")
+        .attr("class", "axis")
+        .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
+        .append("text")
+        .style("text-anchor", "middle")
+        .attr("y", -9)
+        .text(function(d) { return d; });
+
+    // Add and store a brush for each axis.
+    g.append("g")
+        .attr("class", "brush")
+        .each(function(d) {
+          d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brushstart", brushstart).on("brush", brush));
         })
-        .on("drag", function(d) {
-          dragging[d] = Math.min(width, Math.max(0, d3.event.x));
-          foreground.attr("d", path);
-          dimensions.sort(function(a, b) { return position(a) - position(b); });
-          x.domain(dimensions);
-          g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
-        })
-        .on("dragend", function(d) {
-          delete dragging[d];
-          transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
-          transition(foreground).attr("d", path);
-          background
-              .attr("d", path)
-            .transition()
-              .delay(500)
-              .duration(0)
-              .attr("visibility", null);
-        }));
+        .selectAll("rect")
+        .attr("x", -8)
+        .attr("width", 16);
 
-  // Add an axis and title.
-  g.append("g")
-      .attr("class", "axis")
-      .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
-    .append("text")
-      .style("text-anchor", "middle")
-      .attr("y", -9)
-      .text(function(d) { return d; });
 
-  // Add and store a brush for each axis.
-  g.append("g")
-      .attr("class", "brush")
-      .each(function(d) {
-        d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brushstart", brushstart).on("brush", brush));
-      })
-    .selectAll("rect")
-      .attr("x", -8)
-      .attr("width", 16);
-});
+  function position(d) {
+    var v = dragging[d];
+    return v == null ? x(d) : v;
+  }
 
-function position(d) {
-  var v = dragging[d];
-  return v == null ? x(d) : v;
+  function transition(g) {
+    return g.transition().duration(500);
+  }
+
+  // Returns the path for a given data point.
+  function path(d) {
+    return pc_line(dimensions.map(function(p) { return [position(p), y[p](d[p])]; }));
+  }
+
+  function brushstart() {
+    d3.event.sourceEvent.stopPropagation();
+  }
+
+  // Handles a brush event, toggling the display of foreground lines.
+  function brush() {
+    var actives = dimensions.filter(function(p) { return !y[p].brush.empty(); }),
+        extents = actives.map(function(p) { return y[p].brush.extent(); });
+    foreground.style("display", function(d) {
+      return actives.every(function(p, i) {
+        return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+      }) ? null : "none";
+    });
+  }
 }
 
-function transition(g) {
-  return g.transition().duration(500);
-}
-
-// Returns the path for a given data point.
-function path(d) {
-  return pc_line(dimensions.map(function(p) { return [position(p), y[p](d[p])]; }));
-}
-
-function brushstart() {
-  d3.event.sourceEvent.stopPropagation();
-}
-
-// Handles a brush event, toggling the display of foreground lines.
-function brush() {
-  var actives = dimensions.filter(function(p) { return !y[p].brush.empty(); }),
-      extents = actives.map(function(p) { return y[p].brush.extent(); });
-  foreground.style("display", function(d) {
-    return actives.every(function(p, i) {
-      return extents[i][0] <= d[p] && d[p] <= extents[i][1];
-    }) ? null : "none";
-  });
+function update_pc() {
+  console.log("here");
+  pc_svg.remove();
+  pc_svg = pc_parent_svg.append("g")
+                          .attr("transform", "translate(" + pc_margin.left + "," + pc_margin.top + ")");
+  draw_pc();
 }
