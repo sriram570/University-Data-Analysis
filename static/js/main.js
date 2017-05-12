@@ -6,7 +6,7 @@ var VIS_YEAR = "2016";
 var master_times_data = [];
 var current_times_data = [];
 var country_data = {};
-d3.queue()
+d3_queue.queue()
       .defer(d3.json, "/times_data")
       .await(function (error, data_json) {
         master_times_data = data_json.filter(function (d) {
@@ -59,11 +59,11 @@ var map_width  = +map_chart_div.attr("width"),
 var map_legend_rect_size = 10;
 var map_legend_spacing = 2;
 
-var map_projection = d3.geoMercator()
+var map_projection = d3.geo.mercator()
     .scale(map_width/6)
     .translate([map_width / 2, map_height / 2]);
 
-var map_path = d3.geoPath()
+var map_path = d3.geo.path()
     .projection(map_projection);
 
 var map_svg = map_chart_div.append("svg")
@@ -81,9 +81,7 @@ map_svg.append("rect")
 var map_g = map_svg.append("g")
     .style("stroke-width", ".5px");
 
-var map_color = d3.scaleThreshold()
-          .domain(d3.range(0, 10))
-          .range(d3.schemeReds[9]);
+var map_colors = ["#67000d", "#a50f15", "#cb181d", "#fb6a4a", "#fee0d2", "#ccc"];
 
 var map_tooltip = d3.select("body").append("div")
                     .attr("class", "maptooltip")
@@ -94,7 +92,7 @@ var map_tooltip = d3.select("body").append("div")
 /* Ready country names and draw map*/
 function draw_map() {
     country_id_to_name_map = {};
-    d3.queue()
+    d3_queue.queue()
           .defer(d3.json, "/country_id_to_name_map")
           .await(function (error, mapping_json) {
             for (var i = 0; i < mapping_json.length; i++) {
@@ -107,7 +105,7 @@ function draw_map() {
               var color_domain = [9,6,5,3,0,-1];
               var color_exps = [">100", "50 - 100", "25 - 50", "10 - 25", "<10", "Zero/No data"]
               var legend = map_g.selectAll('.legend')
-                                .data(color_domain)
+                                .data(map_colors)
                                 .enter()
                                 .append('g')
                                 .attr('class', 'legend')
@@ -121,8 +119,7 @@ function draw_map() {
                                 .attr('width', map_legend_rect_size)
                                 .attr('height', map_legend_rect_size)
                                 .style('fill', function(d) {
-                                    if (d < 0) {return "#ccc";}
-                                    else {return map_color(d);}
+                                    return d;
                                 });
                           legend.append('text')
                                 .attr('x', map_legend_rect_size + (2*map_legend_spacing))
@@ -223,21 +220,21 @@ function color_map() {
         });
     function get_color(d) {
         var country_name = d.attr("country_name");
-        var country_color = "#ccc";
+        var country_color = map_colors[5]; //#ccc
         if (!(country_name in country_data)) {
-            country_color = "#ccc";
+            country_color = map_colors[5]; //"#ccc";
         } else {
             var cnt = country_data[country_name];
             if (cnt >= 100) {
-                country_color = map_color(9);
+                country_color = map_colors[0];
             } else if (cnt < 100 && cnt >= 50) {
-                country_color = map_color(6);
+                country_color = map_colors[1];
             } else if (cnt < 50 && cnt >= 25) {
-                country_color = map_color(5);
+                country_color = map_colors[2];
             } else if (cnt < 25 && cnt >= 10) {
-                country_color = map_color(3);
+                country_color = map_colors[3];
             } else {
-                country_color = map_color(0);
+                country_color = map_colors[4];
             }
         }
         return country_color;
