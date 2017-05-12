@@ -1,6 +1,6 @@
 function makeLineChart(dataset, xName, yObjs, axisLables) {
     var chartObj = {};
-    var color = d3.scale.ordinal(d3.schemeCategory10);
+    var color = d3.scale.category10();
     chartObj.xAxisLable = axisLables.xAxis;
     chartObj.yAxisLable = axisLables.yAxis;
     /*
@@ -61,9 +61,9 @@ function makeLineChart(dataset, xName, yObjs, axisLables) {
     chartObj.formatAsYear = d3.format("");
 
 //Create axis
-    chartObj.xAxis = d3.svg.axis().scale(chartObj.xScale).tickFormat(chartObj.xFormatter); //< Can be overridden in definition
+    chartObj.xAxis = d3.svg.axis().scale(chartObj.xScale).orient("bottom").tickFormat(chartObj.xFormatter); //< Can be overridden in definition
 
-    chartObj.yAxis = d3.svg.axis().orient("left").scale(chartObj.yScale).tickFormat(chartObj.yFormatter); //< Can be overridden in definition
+    chartObj.yAxis = d3.svg.axis().scale(chartObj.yScale).orient("left").tickFormat(chartObj.yFormatter); //< Can be overridden in definition
 
 
 // Build line building functions
@@ -73,7 +73,7 @@ function makeLineChart(dataset, xName, yObjs, axisLables) {
         };
     }
     for (var yObj in yObjs) {
-        yObjs[yObj].line = d3.svg.line().interpolate(d3.curveBasis).x(function (d) {
+        yObjs[yObj].line = d3.svg.line().interpolate("cardinal").x(function (d) {
             return chartObj.xScale(chartObj.xFunct(d));
         }).y(getYScaleFn(yObj));
     }
