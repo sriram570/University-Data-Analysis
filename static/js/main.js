@@ -339,7 +339,7 @@ var pc_div = d3.select("#pc_div");
 
 var pc_margin = {top: 30, right: 10, bottom: 10, left: 10},
     width = 1200 - pc_margin.left - pc_margin.right,
-    height = 420 - pc_margin.top - pc_margin.bottom;
+    height = 350 - pc_margin.top - pc_margin.bottom;
 
 var x = d3.scale.ordinal().rangePoints([0, width], 1),
     y = {},

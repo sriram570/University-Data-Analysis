@@ -1,4 +1,4 @@
-from flask 						import Flask, render_template, jsonify, current_app
+from flask 						import Flask, render_template, jsonify, current_app, request
 from scipy.cluster.vq			import kmeans2
 from sklearn					import preprocessing
 
@@ -113,7 +113,10 @@ def parallel_coordinates(df):
 	df = clean_normalize_data(df, normalize=False)
 	np.savetxt(outfile, np.asarray(df), delimiter=",", header=",".join(rem_cols), comments="")
 
+@app.route('/time_series')
 def time_series():
+	json = request.get_json()
+	print json
 	# university name (to be made dynamic later)
 	my_university_name = ["Harvard University"]
 	
@@ -135,6 +138,9 @@ def time_series():
 	# parse the first number in rank for data ranges
 	times_plot_data['world_rank'] = times_plot_data['world_rank'].str.split('-').str[0]
 	shanghai_plot_data['world_rank'] = shanghai_plot_data['world_rank'].str.split('-').str[0]
+
+	shanghai_plot_data['world_rank'] = shanghai_plot_data['world_rank'].str.split('=').str[1]
+	times_plot_data['world_rank'] = times_plot_data['world_rank'].str.split('=').str[1]
 
 	plot_data = times_plot_data.append(shanghai_plot_data).append(cwur_plot_data)
 	plot_data['world_rank'] = plot_data['world_rank'].astype(int)

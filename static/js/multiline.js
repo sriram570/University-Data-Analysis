@@ -1,6 +1,6 @@
 function makeLineChart(dataset, xName, yObjs, axisLables) {
     var chartObj = {};
-    var color = d3.scaleOrdinal(d3.schemeCategory10);
+    var color = d3.scale.ordinal(d3.schemeCategory10);
     chartObj.xAxisLable = axisLables.xAxis;
     chartObj.yAxisLable = axisLables.yAxis;
     /*
@@ -50,20 +50,20 @@ function makeLineChart(dataset, xName, yObjs, axisLables) {
     chartObj.bisectYear = d3.bisector(chartObj.xFunct).left; //< Can be overridden in definition
 
 //Create scale functions
-    chartObj.xScale = d3.scaleLinear().range([0, chartObj.width]).domain(d3.extent(chartObj.data, chartObj.xFunct)); //< Can be overridden in definition
+    chartObj.xScale = d3.scale.linear().range([0, chartObj.width]).domain(d3.extent(chartObj.data, chartObj.xFunct)); //< Can be overridden in definition
 
 // Get the max of every yFunct
     chartObj.max = function (fn) {
         return d3.max(chartObj.data, fn);
     };
-    chartObj.yScale = d3.scaleLinear().range([chartObj.height, 0]).domain([0, d3.max(chartObj.yFuncts.map(chartObj.max))]);
+    chartObj.yScale = d3.scale.linear().range([chartObj.height, 0]).domain([0, d3.max(chartObj.yFuncts.map(chartObj.max))]);
 
     chartObj.formatAsYear = d3.format("");
 
 //Create axis
-    chartObj.xAxis = d3.axisBottom().scale(chartObj.xScale).tickFormat(chartObj.xFormatter); //< Can be overridden in definition
+    chartObj.xAxis = d3.svg.axis().scale(chartObj.xScale).tickFormat(chartObj.xFormatter); //< Can be overridden in definition
 
-    chartObj.yAxis = d3.axisLeft().scale(chartObj.yScale).tickFormat(chartObj.yFormatter); //< Can be overridden in definition
+    chartObj.yAxis = d3.svg.axis().orient("left").scale(chartObj.yScale).tickFormat(chartObj.yFormatter); //< Can be overridden in definition
 
 
 // Build line building functions
@@ -73,7 +73,7 @@ function makeLineChart(dataset, xName, yObjs, axisLables) {
         };
     }
     for (var yObj in yObjs) {
-        yObjs[yObj].line = d3.line().curve(d3.curveBasis).x(function (d) {
+        yObjs[yObj].line = d3.svg.line().interpolate(d3.curveBasis).x(function (d) {
             return chartObj.xScale(chartObj.xFunct(d));
         }).y(getYScaleFn(yObj));
     }
