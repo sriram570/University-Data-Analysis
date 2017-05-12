@@ -40,8 +40,6 @@ def load_universities():
 	cwurData = pd.read_csv(DATA_PATH + "cwurData.csv")
 	univ_list = []
 	for univ in timesData['university_name']:
-		#print univ
-		print shanghaiData['university_name'].values
 		if univ in [univ_2 for univ_2 in shanghaiData['university_name'].values]:
 			if univ in [univ_3 for univ_3 in cwurData['institution'].values]:
 				univ_list.append(univ)
@@ -51,11 +49,10 @@ def load_universities():
 @app.route('/time_series', methods = ['GET','POST'])
 def time_series():
 	json = request.get_json()
-	print json
+
 	# university name (to be made dynamic later)
 	my_university_name = json
 	my_university_name = [my_university_name]
-	print my_university_name
 	
 	timesData = pd.read_csv(DATA_PATH + "timesData.csv")
 	shanghaiData = pd.read_csv(DATA_PATH + "shanghaiData.csv")
@@ -73,14 +70,13 @@ def time_series():
 	cwur_plot_data['source'] = 'CWUR'
 
 	# parse the first number in rank for data ranges
-	if '-' in [times_plot_data['world_rank'].str, shanghai_plot_data['world_rank'].str]:
-		times_plot_data['world_rank'] = times_plot_data['world_rank'].str.split('-').str[0]
-		shanghai_plot_data['world_rank'] = shanghai_plot_data['world_rank'].str.split('-').str[0]
-	elif '=' in [times_plot_data['world_rank'].str, shanghai_plot_data['world_rank'].str]:
-		shanghai_plot_data['world_rank'] = shanghai_plot_data['world_rank'].str.split('=').str[1]
-		times_plot_data['world_rank'] = times_plot_data['world_rank'].str.split('=').str[1]
+	times_plot_data['world_rank'] = times_plot_data['world_rank'].map(lambda x: x.lstrip('-'))
+
+	times_plot_data['world_rank'] = times_plot_data['world_rank'].str.split('-').str[0]
+	shanghai_plot_data['world_rank'] = shanghai_plot_data['world_rank'].str.split('-').str[0]
 
 	plot_data = times_plot_data.append(shanghai_plot_data).append(cwur_plot_data)
+
 	plot_data['world_rank'] = plot_data['world_rank'].astype(int)
 
 	times, shanghai, cwur = {}, {}, {}
@@ -101,13 +97,12 @@ def time_series():
 		if year in times and year in shanghai and year in cwur:
 			data_to_write.append([year, times[year], shanghai[year], cwur[year]])
 
-	print data_to_write
 
 	with open(DATA_PATH_2 + json + "_time_series.csv",'wb') as resultFile:
 	    wr = csv.writer(resultFile)
 	    wr.writerows(data_to_write)
 
-	return jsonify(result="hello")
+	return jsonify(result="Done!")
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=10002, debug=True)

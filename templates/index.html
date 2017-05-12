@@ -310,13 +310,14 @@
 				url: '/load_universities',
 				success: function (res) {
 					options = res.result;
-				for(var i = 0; i < options.length; i++) {
-					var opt = options[i];
-					var el = document.createElement("option");
-					el.textContent = opt;
-					el.value = opt;
-					select.appendChild(el);
-				}
+					for(var i = 0; i < options.length; i++) {
+						var opt = options[i];
+						var el = document.createElement("option");
+						el.textContent = opt;
+						el.value = opt;
+						select.appendChild(el);
+					}
+					time_series("Harvard University");
 				}
 			});
 
