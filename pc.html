@@ -37,15 +37,15 @@ svg {
 
 </style>
 <body>
-<div id="pc_div" width="480" height="290"></div>
+<div id="pc_div"></div>
 <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 
 var pc_div = d3.select("#pc_div");
 
 var pc_margin = {top: 30, right: 10, bottom: 10, left: 10},
-    width = 960 - pc_margin.left - pc_margin.right,
-    height = 500 - pc_margin.top - pc_margin.bottom;
+    width = 800 - pc_margin.left - pc_margin.right,
+    height = 400 - pc_margin.top - pc_margin.bottom;
 
 var x = d3.scale.ordinal().rangePoints([0, width], 1),
     y = {},
@@ -63,8 +63,7 @@ var pc_svg = pc_div.append("svg")
     .append("g")
     .attr("transform", "translate(" + pc_margin.left + "," + pc_margin.top + ")");
 
-d3.csv("data/pc.csv", function(error, cars) {
-
+d3.csv("static/data/pc.csv", function(error, cars) {
   // Extract the list of dimensions and create a scale for each.
   x.domain(dimensions = d3.keys(cars[0]).filter(function(d) {
     return y[d] = d3.scale.linear()

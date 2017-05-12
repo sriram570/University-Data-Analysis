@@ -64,6 +64,39 @@
 		  font-size: 10px;
 		}
 
+		pc_svg {
+		  font: 10px sans-serif;
+		}
+
+		.background path {
+		  fill: none;
+		  stroke: #ddd;
+		  shape-rendering: crispEdges;
+		}
+
+		.foreground path {
+		  fill: none;
+		  stroke: steelblue;
+		}
+
+		.brush .extent {
+		  fill-opacity: .3;
+		  stroke: #fff;
+		  shape-rendering: crispEdges;
+		}
+
+		.axis pc_line,
+		.axis path {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
+
+		.axis text {
+		  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+		  cursor: move;
+		}
+
 	</style>
 </head>
 
@@ -155,35 +188,20 @@
 			</div>
 
 			<!-- Row 2 -->
-			<div class="row">
-				<div class="col-lg-9">
+			<div class="row-eq-height">
+				<div class="col-lg-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">
 							<i class="fa fa-bar-chart-o fa-fw"></i> Parallel Coordinates
 						</div>
 						<!-- /.panel-heading -->
-						<div class="panel-body">
-							<div id="morris-bar-chart"></div>
+						<div class="panel-body" style='text-align: center;'>
+							<div id="pc_div"></div>
 						</div>
 						<!-- /.panel-body -->
 					</div>
 				</div>
 				<!-- /.col-lg-8 -->
-
-				<div class="col-lg-3">
-					<div class="panel panel-default">
-						<div class="panel-heading">
-							<i class="fa fa-bar-chart-o fa-fw"></i> 2D Scatterpot
-						</div>
-						<!-- /.panel-heading -->
-						<div class="panel-body">
-							<!--<div class="flot-chart">
-								
-							</div>-->
-						</div>
-						<!-- /.panel-body -->
-					</div>
-				</div>
 			</div>
 
 			<!-- Row 3 -->
