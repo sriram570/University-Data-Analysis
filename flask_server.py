@@ -23,6 +23,10 @@ def index():
 def world_map():
     return json.dumps(json.load(open(DATA_PATH + "world_110m.json")))
 
+@app.route("/charts")
+def charts():
+	return render_template("charts.html")
+
 @app.route("/country_id_to_name_map")
 def country_id_to_name_map():
     return json.dumps(json.load(open(DATA_PATH + "country_id_to_name_map.json")))

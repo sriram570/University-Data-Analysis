@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<title>CSE 564 Final Project - University Analysis</title>
+
+	<!-- Bootstrap Core CSS -->
+	<link href="./static/css/bootstrap.min.css" rel="stylesheet">
+
+	<!-- MetisMenu CSS -->
+	<link href="./static/css/metisMenu.min.css" rel="stylesheet">
+
+	<!-- Custom CSS -->
+	<link href="./static/css/sb-admin-2.css" rel="stylesheet">
+
+	<!-- Custom Fonts -->
+	<link href="./static/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+	<style>
+
+	svg {
+	  font: 10px sans-serif;
+	  padding: 10px;
+	}
+
+	.axis,
+	.frame {
+	  shape-rendering: crispEdges;
+	}
+
+	.axis line {
+	  stroke: #ddd;
+	}
+
+	.axis path {
+	  display: none;
+	}
+
+	.cell text {
+	  font-weight: bold;
+	  text-transform: capitalize;
+	}
+
+	.frame {
+	  fill: none;
+	  stroke: #aaa;
+	}
+
+	circle {
+	  fill-opacity: .7;
+	}
+
+	circle.hidden {
+	  fill: #ccc !important;
+	}
+
+	.extent {
+	  fill: #000;
+	  fill-opacity: .125;
+	  stroke: #fff;
+	}
+
+	path { 
+	  stroke: steelblue;
+		stroke-width: 2;
+		fill: none;
+	}
+
+	.axis path,
+	.axis line {
+		fill: none;
+		stroke: grey;
+		stroke-width: 1;
+		shape-rendering: crispEdges;
+	}
+	.maptooltip {
+	  border-style: solid;
+	  border-width: 0.5px;
+	  background-color: white;
+	}
+	</style>
+</head>
+
+<body>
+
+	<div id="wrapper">
+
+		<!-- Navigation -->
+		<nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="/"></a>
+			</div>
+			<!-- /.navbar-header -->
+
+			<ul class="nav navbar-top-links navbar-left">
+				<li>
+					<a href="/"><i class="fa fa-dashboard fa-fw"></i> <strong>University Analysis Dashboard<strong></a>
+				</li>
+				<li>
+					<a href="/charts"><i class="fa fa-bar-chart-o fa-fw"></i><strong>Scree and Scatter Plots<strong></a>
+				</li>
+			</ul>
+			<!-- /.navbar-top-links -->
+		</nav>
+
+		<div style="padding: 15px 15px;">
+
+			<!-- Row 1 -->
+			<div class="row-eq-height">
+				<div class="col-lg-6">
+					<!-- University Map Panel -->
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bar-chart-o fa-fw"></i> Scree Plot
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body" style='text-align: center;'>
+							<div id="scree_plot"></div>
+						</div>
+						<!-- /.panel-body -->
+					</div>
+					<!-- /.panel -->
+				</div>
+
+				<div class="col-lg-6">
+					<!-- University Map Panel -->
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bar-chart-o fa-fw"></i> 2-D Scatter Plot
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body" style='text-align: center;'>
+							<div class="form-inline">
+							  <label for="sel1">Attribute 1: </label>
+							  <select class="form-control" id="sel1">
+							  <option>income</option>
+							  <option>num_students</option>
+							  <option>student_staff_ratio</option>
+							  <option>total_score</option>
+							  </select>
+
+							  <label for="sel2">Attribute 2: </label>
+							  <select class="form-control" id="sel2">
+							  <option>num_students</option>
+							  <option>income</option>
+							  <option>student_staff_ratio</option>
+							  <option>total_score</option>
+							  </select>
+							</div>
+
+							<div id="scatter"></div>
+						</div>
+						<!-- /.panel-body -->
+					</div>
+					<!-- /.panel -->
+				</div>
+			</div>
+
+			<!-- Row 2 -->
+			<div class="row">
+				<div class="col-lg-12">
+					<!-- University Map Panel -->
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bar-chart-o fa-fw"></i> Scatter Plot for top 4 attributes
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body" style='text-align: center;'>
+							<div id="scatter_plot"></div>
+						</div>
+						<!-- /.panel-body -->
+					</div>
+					<!-- /.panel -->
+				</div>
+			</div>
+
+
+		</div>
+	</div>
+	<!-- /#wrapper -->
+
+	<!-- jQuery -->
+	<script src="./static/js/jquery.min.js"></script>
+
+	<!-- Bootstrap Core JavaScript -->
+	<script src="./static/js/bootstrap.min.js"></script>
+
+	<script src="./static/js/metisMenu.min.js"></script>
+
+	<script src="./static/js/sb-admin-2.js"></script>
+
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+
+	<script src="./static/js/scatterplot.js"></script>
+	<script>
+
+		$( "#sel2" ).change(function() {
+			if ($("#sel1").val() === $("#sel2").val()) {
+				alert("Values should be different!!");
+			}
+			else {
+				//console.log($("#sel1").val());
+				//console.log($("#sel2").val());
+				draw_2d_plot($("#sel1").val(), $("#sel2").val());
+			}	
+		});
+
+		$( "#sel1" ).change(function() {
+			if ($("#sel1").val() === $("#sel2").val()) {
+				alert("Values should be different!!");
+			}
+			else {
+				draw_2d_plot($("#sel1").val(), $("#sel2").val());
+			}	
+		});
+
+	</script>
+</body>
+
+</html>
