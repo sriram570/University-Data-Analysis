@@ -178,7 +178,7 @@
 							<i class="fa fa-bar-chart-o fa-fw"></i> Tree Map
 						</div>
 						<div class="panel-body" style='text-align: center;'>
-							<div id="pie"></div>
+							<div id="pie_chart_div"></div>
 							<!--<a href="#" class="btn btn-default btn-block">View Details</a>-->
 						</div>
 						<!-- /.panel-body -->
@@ -278,7 +278,7 @@
 
 	<script src="https://d3js.org/topojson.v1.min.js"></script>
 	<script src="https://d3js.org/d3-queue.v2.min.js"></script>
-	<script src="https://unpkg.com/topojson-client@3"></script>
+	<!--<script src="https://unpkg.com/topojson-client@3"></script>-->
 	<script src="./static/js/main.js"></script>
 
 	<script>
@@ -306,44 +306,6 @@
 		}
 		time_series()
 		*/
-
-		/* Pie Chart */
-		var pie_chart = function() {
-			var data = [
-			  { label: "1", value: 1 },
-			  { label: "2", value: 4 },
-			  { label: "3", value: 3 }
-			];
-
-			var pie = new d3pie("pie", {
-				size: {
-					canvasHeight: 290,
-					canvasWidth: 290
-				},
-				data: {
-					content: data
-				},
-				/*tooltips: {
-					enabled: true,
-					type: "placeholder",
-					string: "{label}, {value}, {percentage}%"
-				}*/
-			});
-
-			/*$(function() {
-			  var num = 4;
-			  $("#addData").on("click", function() {
-				data.push({
-				  label: num.toString(),
-				  value: Math.floor(Math.random() * 10) + 1
-				});
-
-				pie.updateProp("data.content", data);
-				num++;
-			  });
-			});*/
-		}
-		pie_chart()
 
 	</script>
 </body>

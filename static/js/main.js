@@ -26,22 +26,28 @@ d3_queue.queue()
 /* Dashboard trigger */
 function render_dashboard() {
     draw_map();
+    draw_pie_chart();
 }
 
 /* Helper functions */
-d3.selection.prototype.moveToFront = function() {  
+d3.selection.prototype.moveToFront = function() {
     return this.each(function(){
         this.parentNode.appendChild(this);
     });
 };
 
 /* =========== Slider ============ */
-function range_slider_fn() {
-    var rank_range = document.getElementById('ex2').getAttribute('value');
+
+function get_rank_range_data() {
+  var rank_range = document.getElementById('ex2').getAttribute('value');
     rank_range = rank_range.split(",").map(function(d) {return parseInt(d);});
-    current_times_data = master_times_data.filter(function (d) {
+    return master_times_data.filter(function (d) {
         return (d.world_rank >= rank_range[0] && d.world_rank <= rank_range[1]);
         });
+}
+
+function range_slider_fn() {
+    current_times_data = get_rank_range_data();
     color_map();
 }
 $("#ex2").slider({})
@@ -151,6 +157,7 @@ function draw_map() {
 
 function map_clicked(d) {
   var country_name = d3.select(this).attr("country_name");
+
   if (!(country_name in country_data)) {
     return;
   }
@@ -182,6 +189,8 @@ function map_clicked(d) {
 function map_reset() {
   map_active.classed("active", false);
   map_active = d3.select(null);
+
+  console.log(current_times_data.length);
 
   map_g.transition()
       .duration(750)
@@ -242,6 +251,50 @@ function color_map() {
     
 }
 
+
+/* ========= Pie chart elements ========= */
+
+var pie_chart = null;
+
+function draw_pie_chart() {
+  var research_work = get_research_count();
+  pie_chart = new d3pie("pie_chart_div", {
+                  header: {
+                    title: {
+                      text: "World"
+                    },
+                    location: "pie-center"
+                  },
+                  size: {
+                    canvasHeight: 290,
+                    canvasWidth: 350,
+                    pieInnerRadius: "60%"
+                  },
+                  data: {
+                    content: [
+                      { label: "Very High", value: research_work[0] },
+                      { label: "High", value: research_work[1] },
+                      { label: "Medium", value: research_work[2] },
+                      { label: "Low", value: research_work[3] },
+                      { label: "Very Low", value: research_work[4] }
+                    ]
+                  }
+                });
+}
+
+function update_pie_chart() {
+  var research_work = get_research_count();
+
+}
+
+function get_research_count() {
+  var research = [0,0,0,0,0];
+  current_times_data.map(function(d) {
+    r = +d.research;
+    research[4 - parseInt(r/20)] += 1;
+  });
+  return research;
+}
 
 /* ========= PC elements ========= */
 
