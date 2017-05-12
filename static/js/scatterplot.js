@@ -144,7 +144,7 @@ var scree_plot_div = d3.select("#scree_plot");
 
 // Set the dimensions of the canvas / graph
 var	margin = {top: 50, right: 50, bottom: 50, left: 50},
-	width = 600 - margin.left - margin.right,
+	width = 500 - margin.left - margin.right,
 	height = 270 - margin.top - margin.bottom;
 
 // Set the ranges
@@ -171,7 +171,7 @@ var	svg = scree_plot_div.append("svg")
 	.attr("width", width + margin.left + margin.right)
 	.attr("height", height + margin.top + margin.bottom)
 	.append("g")
-	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	.attr("transform", "translate(" + margin.left + "," + (margin.top - 3) + ")");
 
 // Get the data
 d3.csv("./static/data/pca_scree.csv", function(error, data) {
@@ -240,7 +240,7 @@ function draw_2d_plot(attr1, attr2) {
 	var scatter = d3.select("#scatter");
 
 	var margin = {top: 20, right: 20, bottom: 30, left: 40},
-	    width = 560 - margin.left - margin.right,
+	    width = 540 - margin.left - margin.right,
 	    height = 300 - margin.top - margin.bottom;
 
 	// setup x 
