@@ -365,6 +365,12 @@ function draw_pc() {
 
     // Extract the list of dimensions and create a scale for each.
     x.domain(dimensions = d3.keys(pc_times_data[0]).filter(function(d) {
+      if (d === "world_rank") {
+        console.log("here");
+        return y[d] = d3.scale.linear()
+           .domain(d3.extent(pc_times_data, function(p) { return +p[d]; }))
+           .range([0, height]);
+      }
       return y[d] = d3.scale.linear()
           .domain(d3.extent(pc_times_data, function(p) { return +p[d]; }))
           .range([height, 0]);
