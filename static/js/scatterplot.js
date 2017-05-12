@@ -1,8 +1,8 @@
 function draw_scatterplot() {
 	var scatter_plot_div = d3.select("#scatter_plot");
 
-	var width = 960,
-		size = 230,
+	var width = 860,
+		size = 180,
 		padding = 20;
 
 	var x = d3.scale.linear()
@@ -99,8 +99,8 @@ function draw_scatterplot() {
 		  .enter().append("circle")
 			.attr("cx", function(d) { return x(d[p.x]); })
 			.attr("cy", function(d) { return y(d[p.y]); })
-			.attr("r", 2)
-			.style("fill", function(d) { return color(d.species); });
+			.attr("r", 1.25)
+			.style("fill", function(d) { return "#6495ed"; });
 	  }
 
 	  var brushCell;
@@ -214,11 +214,11 @@ d3.csv("./static/data/pca_scree.csv", function(error, data) {
 		.data([{'x':4, 'y':1.0062}])
 		.enter()
 		.append("circle")
-		.attr("r", 8)
+		.attr("r", 4)
 		.attr("cx", function(d){
 		    return x(d.x);
 		})
-		.attr("fill", function(d, i) {return colorScale(d.x)})
+		.attr("fill", function(d, i) {return "#ff5050";})
 		.attr("cy", function(d){
 		    return y(d.y);
 		});
@@ -239,7 +239,7 @@ function draw_2d_plot(attr1, attr2) {
 	$('#scatter').empty();
 	var scatter = d3.select("#scatter");
 
-	var margin = {top: 20, right: 20, bottom: 30, left: 40},
+	var margin = {top: 20, right: 20, bottom: 40, left: 50},
 	    width = 540 - margin.left - margin.right,
 	    height = 300 - margin.top - margin.bottom;
 
@@ -256,8 +256,8 @@ function draw_2d_plot(attr1, attr2) {
 	    yAxis = d3.svg.axis().scale(yScale).orient("left");
 
 	// setup fill color
-	var cValue = function(d) { return "#00FFFF";},
-	    color = d3.scale.category10();
+	var cValue = function(d) { return "#ff0000";},
+	    color = "#ff0000";
 
 	// add the graph canvas to the body of the webpage
 	var svg = scatter.append("svg")
@@ -295,7 +295,7 @@ function draw_2d_plot(attr1, attr2) {
 	    .append("text")
 	      .attr("class", "label")
 	      .attr("x", width)
-	      .attr("y", -6)
+	      .attr("y", +30)
 	      .style("text-anchor", "end")
 	      .text(attr1);
 
@@ -306,7 +306,7 @@ function draw_2d_plot(attr1, attr2) {
 	    .append("text")
 	      .attr("class", "label")
 	      .attr("transform", "rotate(-90)")
-	      .attr("y", 6)
+	      .attr("y", -40)
 	      .attr("dy", ".71em")
 	      .style("text-anchor", "end")
 	      .text(attr2);
@@ -314,12 +314,12 @@ function draw_2d_plot(attr1, attr2) {
 	  // draw dots
 	  svg.selectAll(".dot")
 	      .data(data)
-	    .enter().append("circle")
+	      .enter().append("circle")
 	      .attr("class", "dot")
-	      .attr("r", 2)
+	      .attr("r", 1.25)
 	      .attr("cx", xMap)
 	      .attr("cy", yMap)
-	      .style("fill", function(d) { return color(cValue(d));}) 
+	      .style("fill", function(d) { return "#DC2424";}) 
 	      .on("mouseover", function(d) {
 	          tooltip.transition()
 	               .duration(200)
