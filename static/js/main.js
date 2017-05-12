@@ -6,6 +6,7 @@ var VIS_YEAR = "2016";
 var master_times_data = [];
 var current_times_data = [];
 var country_data = {};
+var max_income = 100;
 d3_queue.queue()
       .defer(d3.json, "/times_data")
       .await(function (error, data_json) {
@@ -472,4 +473,83 @@ function update_pc() {
   pc_svg = pc_parent_svg.append("g")
                           .attr("transform", "translate(" + pc_margin.left + "," + pc_margin.top + ")");
   draw_pc();
+}
+
+/* ======== Student Staff pie chart */
+
+var ss_pie_chart = null;
+
+function draw_ss_pie_chart(univ) {
+  var ratio = master_times_data.filter(function (d) {
+    return (d.university_name === univ)
+  }).map(function (d) {
+    return d.student_staff_ratio;
+  });
+  ratio = ratio[0];
+  console.log(univ, ratio);
+  var full_ratio = ratio + 1;
+  ss_pie_chart = new d3pie("student_staff_pie_div", {
+                  size: {
+                    canvasHeight: 265,
+                    canvasWidth: 350
+                  },
+                  data: {
+                    content: [ { label: "Students", value: (ratio/full_ratio)*100 },
+                                { label: "Staff", value: (1/full_ratio)*100 }
+                              ]
+                  }
+                });
+}
+
+function update_ss_pie_chart(univ) {
+  ss_pie_chart.destroy();
+  draw_ss_pie_chart(univ);
+}
+
+/* ======== ROI element ========= */
+
+var roi_heading = d3.select("#roi_heading_div");
+var roi_vector = d3.select("#roi_vector").attr("opacity", "0.9");
+var grad = roi_vector.append("defs").append("linearGradient").attr("id", "grad")
+                .attr("x1", "0%").attr("x2", "0%").attr("y1", "100%").attr("y2", "0%");
+            grad.append("stop").attr("offset", "0%").style("stop-color", "brown");
+            grad.append("stop").attr("offset", "50%").style("stop-color", "white");
+
+roi_vector.on("mouseover", function(d) {
+  d3.select(this).attr("opacity", "1");
+}).on("mouseout", function(d) {
+  d3.select(this).attr("opacity", "0.9");
+});
+
+$( "#sel1" ).change(function() {
+    var univ = $("#sel1").val();
+    //draw_student_staff_pie_chart();
+    modify_roi_vector(univ);
+    update_ss_pie_chart(univ);
+});
+
+function modify_roi_vector(univ) {
+  var income = master_times_data.filter(function (d) {
+    return (d.university_name === univ)
+  }).map(function (d) {
+    return d.income;
+  });
+  income = income[0];
+  var percentage = ((income/max_income) * 50) + 50;
+  if (isNaN(percentage)) {
+    percentage = 50;
+  }
+  console.log(univ, percentage);
+  var color = "#006400"
+  if (percentage <= 70) {
+    color = "brown";
+  } 
+
+  grad.remove();
+  grad = roi_vector.append("defs").append("linearGradient").attr("id", "grad")
+                .attr("x1", "0%").attr("x2", "0%").attr("y1", "100%").attr("y2", "0%");
+            grad.append("stop").attr("offset", percentage + "%").style("stop-color", color);
+            grad.append("stop").attr("offset", "50%").style("stop-color", "white");
+  d3.select("#roi_vector").style("fill", "url(#grad)").attr("stroke", "black").attr("stroke-width", ".05px")
+  roi_heading.html("Return On Investment Score: " + percentage);
 }
