@@ -26,6 +26,7 @@ d3_queue.queue()
 /* Dashboard trigger */
 function render_dashboard() {
     draw_map();
+    draw_pc();
 }
 
 /* Helper functions */
@@ -244,12 +245,27 @@ function color_map() {
 
 
 /* ========= PC elements ========= */
+function data_helper() {
+  var new_data = current_times_data.map(function (d) {
+    cols = ["world_rank", "teaching", "research", "citations", "international", "total_score"];
+    arr = []
+    new_d = {}
+    for (var i = 0; i < cols.length; i++) {
+        if (d[cols[i]] == '-')
+          new_d[cols[i]] = Math.random() * (60 - 30) + 40;
+        else
+          new_d[cols[i]] = parseFloat(d[cols[i]]);
+    }
+    return new_d;
+  });
+  return new_data;
+}
 
 var pc_div = d3.select("#pc_div");
 
 var pc_margin = {top: 30, right: 10, bottom: 10, left: 10},
     width = 1200 - pc_margin.left - pc_margin.right,
-    height = 450 - pc_margin.top - pc_margin.bottom;
+    height = 420 - pc_margin.top - pc_margin.bottom;
 
 var x = d3.scale.ordinal().rangePoints([0, width], 1),
     y = {},
@@ -267,108 +283,110 @@ var pc_svg = pc_div.append("svg")
     .append("g")
     .attr("transform", "translate(" + pc_margin.left + "," + pc_margin.top + ")");
 
-d3.csv("static/data/pc.csv", function(error, data) {
-  console.log();
-  console.log(data);
-  // Extract the list of dimensions and create a scale for each.
-  x.domain(dimensions = d3.keys(data[0]).filter(function(d) {
-    return y[d] = d3.scale.linear()
-        .domain(d3.extent(data, function(p) { return +p[d]; }))
-        .range([height, 0]);
-  }));
+function draw_pc() {
 
-  // Add grey background lines for context.
-  background = pc_svg.append("g")
-      .attr("class", "background")
-    .selectAll("path")
-      .data(data)
-    .enter().append("path")
-      .attr("d", path);
+    pc_times_data = data_helper();
 
-  // Add blue foreground lines for focus.
-  foreground = pc_svg.append("g")
-      .attr("class", "foreground")
-    .selectAll("path")
-      .data(data)
-    .enter().append("path")
-      .attr("d", path);
+    // Extract the list of dimensions and create a scale for each.
+    x.domain(dimensions = d3.keys(pc_times_data[0]).filter(function(d) {
+      return y[d] = d3.scale.linear()
+          .domain(d3.extent(pc_times_data, function(p) { return +p[d]; }))
+          .range([height, 0]);
+    }));
 
-  // Add a group element for each dimension.
-  var g = pc_svg.selectAll(".dimension")
-      .data(dimensions)
-    .enter().append("g")
-      .attr("class", "dimension")
-      .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
-      .call(d3.behavior.drag()
-        .origin(function(d) { return {x: x(d)}; })
-        .on("dragstart", function(d) {
-          dragging[d] = x(d);
-          background.attr("visibility", "hidden");
+    // Add grey background lines for context.
+    background = pc_svg.append("g")
+        .attr("class", "background")
+      .selectAll("path")
+        .data(pc_times_data)
+      .enter().append("path")
+        .attr("d", path);
+
+    // Add blue foreground lines for focus.
+    foreground = pc_svg.append("g")
+        .attr("class", "foreground")
+      .selectAll("path")
+        .data(pc_times_data)
+      .enter().append("path")
+        .attr("d", path);
+
+    // Add a group element for each dimension.
+    var g = pc_svg.selectAll(".dimension")
+        .data(dimensions)
+      .enter().append("g")
+        .attr("class", "dimension")
+        .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+        .call(d3.behavior.drag()
+          .origin(function(d) { return {x: x(d)}; })
+          .on("dragstart", function(d) {
+            dragging[d] = x(d);
+            background.attr("visibility", "hidden");
+          })
+          .on("drag", function(d) {
+            dragging[d] = Math.min(width, Math.max(0, d3.event.x));
+            foreground.attr("d", path);
+            dimensions.sort(function(a, b) { return position(a) - position(b); });
+            x.domain(dimensions);
+            g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
+          })
+          .on("dragend", function(d) {
+            delete dragging[d];
+            transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
+            transition(foreground).attr("d", path);
+            background
+                .attr("d", path)
+              .transition()
+                .delay(500)
+                .duration(0)
+                .attr("visibility", null);
+          }));
+
+    // Add an axis and title.
+    g.append("g")
+        .attr("class", "axis")
+        .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
+        .append("text")
+        .style("text-anchor", "middle")
+        .attr("y", -9)
+        .text(function(d) { return d; });
+
+    // Add and store a brush for each axis.
+    g.append("g")
+        .attr("class", "brush")
+        .each(function(d) {
+          d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brushstart", brushstart).on("brush", brush));
         })
-        .on("drag", function(d) {
-          dragging[d] = Math.min(width, Math.max(0, d3.event.x));
-          foreground.attr("d", path);
-          dimensions.sort(function(a, b) { return position(a) - position(b); });
-          x.domain(dimensions);
-          g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
-        })
-        .on("dragend", function(d) {
-          delete dragging[d];
-          transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
-          transition(foreground).attr("d", path);
-          background
-              .attr("d", path)
-            .transition()
-              .delay(500)
-              .duration(0)
-              .attr("visibility", null);
-        }));
+        .selectAll("rect")
+        .attr("x", -8)
+        .attr("width", 16);
 
-  // Add an axis and title.
-  g.append("g")
-      .attr("class", "axis")
-      .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
-    .append("text")
-      .style("text-anchor", "middle")
-      .attr("y", -9)
-      .text(function(d) { return d; });
 
-  // Add and store a brush for each axis.
-  g.append("g")
-      .attr("class", "brush")
-      .each(function(d) {
-        d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brushstart", brushstart).on("brush", brush));
-      })
-    .selectAll("rect")
-      .attr("x", -8)
-      .attr("width", 16);
-});
+  function position(d) {
+    var v = dragging[d];
+    return v == null ? x(d) : v;
+  }
 
-function position(d) {
-  var v = dragging[d];
-  return v == null ? x(d) : v;
-}
+  function transition(g) {
+    return g.transition().duration(500);
+  }
 
-function transition(g) {
-  return g.transition().duration(500);
-}
+  // Returns the path for a given data point.
+  function path(d) {
+    return pc_line(dimensions.map(function(p) { return [position(p), y[p](d[p])]; }));
+  }
 
-// Returns the path for a given data point.
-function path(d) {
-  return pc_line(dimensions.map(function(p) { return [position(p), y[p](d[p])]; }));
-}
+  function brushstart() {
+    d3.event.sourceEvent.stopPropagation();
+  }
 
-function brushstart() {
-  d3.event.sourceEvent.stopPropagation();
-}
-
-// Handles a brush event, toggling the display of foreground lines.
-function brush() {
-  var actives = dimensions.filter(function(p) { return !y[p].brush.empty(); }),
-      extents = actives.map(function(p) { return y[p].brush.extent(); });
-  foreground.style("display", function(d) {
-    return actives.every(function(p, i) {
-      return extents[i][0] <= d[p] && d[p] <= extents[i][1];
-    }) ? null : "none";
-  });
+  // Handles a brush event, toggling the display of foreground lines.
+  function brush() {
+    var actives = dimensions.filter(function(p) { return !y[p].brush.empty(); }),
+        extents = actives.map(function(p) { return y[p].brush.extent(); });
+    foreground.style("display", function(d) {
+      return actives.every(function(p, i) {
+        return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+      }) ? null : "none";
+    });
+  }
 }
